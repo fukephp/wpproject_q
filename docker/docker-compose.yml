@@ -1,0 +1,51 @@
+version: "3"
+networks:
+    q-wordpress-6.1.1-net:
+        driver: bridge
+
+services:
+    mysql:
+        image: mysql:5.7
+        container_name: q-wordpress-6.1.1-mysql
+        tty: true
+        ports:
+            - "4208:3306"
+        volumes:
+            - "./var/lib/mysql/:/var/lib/mysql"
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            MYSQL_DATABASE: ${MYSQL_DATABASE}
+            MYSQL_USER: ${MYSQL_USER}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+        networks:
+            - q-wordpress-6.1.1-net
+
+    server:
+        image: wordpress:latest
+        container_name: q-wordpress-6.1.1
+        ports:
+            - "4282:80"
+        volumes:
+            - "../project/:/var/www/html"
+        environment:
+            WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+            WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+            WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+            WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
+        depends_on:
+            - mysql
+        networks:
+            - q-wordpress-6.1.1-net
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: q-phpmyadmin
+        ports:
+            - "4283:80"
+        environment:
+            PMA_HOST: ${WORDPRESS_DB_HOST}
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        depends_on:
+            - mysql
+        networks:
+            - q-wordpress-6.1.1-net
